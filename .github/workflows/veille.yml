@@ -1,0 +1,53 @@
+name: Veille nouveautés cycle
+
+on:
+  schedule:
+    # 04:35 UTC = 06:35 à Paris en été, 05:35 en hiver
+    - cron: "35 4 * * *"
+  workflow_dispatch: {}   # bouton « Run workflow » pour lancer à la main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: veille
+  cancel-in-progress: false
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer
+        run: pip install -r requirements.txt
+
+      - name: Chercher les nouveautés
+        run: python scripts/veille.py
+
+      - name: Enregistrer les résultats
+        run: |
+          git config user.name "veille-cycle"
+          git config user.email "veille-cycle@users.noreply.github.com"
+          git add etat docs/data/nouveautes.json docs/data/arbre.json docs/data/statut.json docs/data/widget.json
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau."
+          else
+            git commit -m "Veille du $(date -u +%F)"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Pages de diagnostic (si fil d'Ariane introuvable)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic
+          path: debug/
+          if-no-files-found: ignore
+          retention-days: 7
