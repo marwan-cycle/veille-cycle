@@ -1,0 +1,28 @@
+{
+  "ntfy_serveur": "https://ntfy.sh",
+  "ntfy_sujet": "veille-cycle-uu2m2atfzj",
+
+  "sitemaps": [
+    "https://www.decathlon.fr/decathlon-products-index.xml"
+  ],
+  "inclure_marketplace": false,
+  "sitemap_marketplace": "https://www.decathlon.fr/marketplace-products-index.xml",
+
+  "fiches_max_par_jour": 500,
+  "pause_entre_fiches_secondes": 1.5,
+  "retention_jours": 90,
+
+  "rubriques_supplementaires": {
+    "/electronique/compteur-gps-et-navigation": ["Accessoires Vélo", "Compteurs vélos et GPS"]
+  },
+
+  "arbre_de_depart": {
+    "Vélos": ["Vélos route", "Vélos VTT", "Vélos Ville", "Vélos enfant", "Vélos Electriques"],
+    "Vélos électriques": ["Vélos ville électrique", "Vtt électrique", "VTC électrique", "Vélos Gravel Electrique", "Vélos Cargos électriques"],
+    "Equipements Cycliste": ["Vêtements Vélo", "Casques Vélo", "Chaussures Vélo et Sur-chaussures", "Gants Vélo", "Lunettes Vélo"],
+    "Accessoires Vélo": ["Bagagerie Vélo", "Eclairage Vélo", "Antivols Vélo", "Accessoires Electroniques Vélo", "Hometrainers Vélo", "Compteurs vélos et GPS"],
+    "Transport & Rangement du Vélo": ["Porte-Bébés Vélo", "Porte-Vélos", "Housses Vélo", "Rack & Support Rangement du Vélo", "Remorques Vélo"],
+    "Pièces Détachées Vélo": ["Roues, Pneus et Chambre à Air Vélo", "Selles Vélo et Tiges de Selle", "Transmission Vélo", "Freinage Vélo", "Cadres, Fourches & Suspensions Vélo"],
+    "Entretien et outillage": ["Dégraissants", "Nettoyants", "Lubrifiants", "Tout en Un", "Outillages Vélo"]
+  }
+}

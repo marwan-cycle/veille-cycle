@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Veille Cycle</title>
+<meta name="theme-color" content="#1f2a6b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f3f4f8; --surface:#fff; --ink:#151a2d; --muted:#626a80; --line:#e3e6ee;
+  --brand:#2f3fb0; --brand-ink:#fff; --brand-soft:#e6e9fb; --new:#e2541c; --ok:#1d8a5b;
+  --chip:#eceef5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0f1220; --surface:#181c2e; --ink:#eef0f7; --muted:#9aa1b8; --line:#2a2f45;
+    --brand:#7d8cff; --brand-ink:#0f1220; --brand-soft:#252b4d; --new:#ff8a5c; --chip:#22273d; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 12px 6px;
+  padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:8px}
+.top h1{font-size:16px;margin:0;flex:1;letter-spacing:-.01em}
+.top h1 small{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:1px}
+.icon-btn{border:0;background:var(--surface);border-radius:10px;width:36px;height:36px;
+  display:grid;place-items:center;cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+.icon-btn svg{width:18px;height:18px}
+.alerte{margin:8px 0 0;padding:6px 8px;border-radius:8px;font-size:12px;background:#fff3e0;color:#8a4a00}
+@media (prefers-color-scheme: dark){.alerte{background:#3a2a12;color:#ffcf8a}}
+.seg{display:flex;background:var(--chip);border-radius:10px;padding:3px;margin-top:8px}
+.seg button{flex:1;border:0;background:transparent;padding:6px 4px;border-radius:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:8px -12px 0;padding:0 12px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:0;background:var(--chip);border-radius:999px;padding:5px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--brand);color:var(--brand-ink)}
+.chip b{font-weight:700;margin-left:3px;opacity:.75}
+main{padding:4px 8px 90px}
+.jour{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 4px 6px}
+.carte{display:flex;gap:10px;background:var(--surface);border-radius:12px;padding:8px;margin-bottom:6px;
+  text-decoration:none;color:inherit;box-shadow:0 0 0 1px var(--line);position:relative}
+.carte img,.carte .ph{width:68px;height:68px;border-radius:8px;object-fit:contain;background:#fff;flex:none}
+.carte .ph{background:var(--chip)}
+.carte .txt{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.nom{font-weight:600;font-size:13px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bas{display:flex;align-items:center;gap:6px;margin-top:auto}
+.prix{font-weight:700;font-size:13px}
+.tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--brand-soft);color:var(--brand)}
+.tag.new{background:var(--new);color:#fff}
+.vide{text-align:center;color:var(--muted);padding:48px 20px;font-size:13px}
+.vide b{display:block;color:var(--ink);font-size:15px;margin-bottom:6px}
+.barre{position:fixed;left:0;right:0;bottom:0;padding:8px 12px max(8px,env(safe-area-inset-bottom));
+  background:linear-gradient(transparent,var(--bg) 35%);display:flex;justify-content:center}
+.barre button{border:0;background:var(--brand);color:var(--brand-ink);font-weight:700;border-radius:999px;padding:10px 18px;cursor:pointer;box-shadow:0 4px 14px rgba(47,63,176,.3)}
+/* Réglages */
+.feuille{position:fixed;inset:0;z-index:10;background:var(--bg);overflow:auto;transform:translateY(100%);transition:transform .25s ease;
+  padding-bottom:40px}
+.feuille.ouverte{transform:none}
+.feuille header{display:flex;align-items:center;gap:8px}
+.feuille header h2{flex:1;font-size:16px;margin:0}
+.section{background:var(--surface);margin:10px 8px;border-radius:12px;box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.section h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0;padding:10px 12px 4px}
+.ligne{display:flex;align-items:center;gap:10px;padding:9px 12px;border-top:1px solid var(--line)}
+.ligne:first-of-type{border-top:0}
+.ligne .lib{flex:1;min-width:0}
+.ligne .lib small{display:block;color:var(--muted);font-size:11px}
+.sous{padding-left:28px;background:color-mix(in srgb,var(--chip) 40%,transparent)}
+.fleche{border:0;background:none;padding:4px;cursor:pointer;color:var(--muted);transition:transform .2s}
+.fleche.ouv{transform:rotate(90deg)}
+input[type=checkbox].sw{appearance:none;width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:background .15s;margin:0}
+input[type=checkbox].sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+input[type=checkbox].sw:checked{background:var(--brand)}
+input[type=checkbox].sw:checked::after{transform:translateX(16px)}
+input[type=checkbox].sw:indeterminate{background:color-mix(in srgb,var(--brand) 50%,var(--line))}
+input[type=checkbox].sw:indeterminate::after{transform:translateX(16px)}
+.onglets{display:flex;gap:6px;padding:10px 8px 0}
+.onglets button{flex:1;border:0;border-radius:10px;padding:8px;background:var(--chip);font-weight:600;font-size:13px;cursor:pointer}
+.onglets button.on{background:var(--brand);color:var(--brand-ink)}
+.champ{display:block;width:100%;margin-top:6px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.btn{border:0;border-radius:8px;padding:8px 12px;background:var(--brand);color:var(--brand-ink);font-weight:600;cursor:pointer}
+.btn.sec{background:var(--chip);color:var(--ink)}
+.aide{font-size:12px;color:var(--muted);padding:4px 12px 12px;line-height:1.45}
+.aide code{background:var(--chip);padding:1px 4px;border-radius:4px;font-size:11px}
+.etat-sync{font-size:12px;padding:0 12px 10px}
+.etat-sync.ok{color:var(--ok)} .etat-sync.err{color:var(--new)}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:999px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.vis{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>Nouveautés cycle<small id="sousTitre">Chargement…</small></h1>
+    <button class="icon-btn" id="btnMaj" aria-label="Actualiser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+    <button class="icon-btn" id="btnReglages" aria-label="Réglages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+  </div>
+  <div id="alerte"></div>
+  <div class="seg" role="tablist">
+    <button id="vueNouv" class="on">Depuis ma visite</button>
+    <button id="vueTout">Tout (90 jours)</button>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+<main id="liste"></main>
+<div class="barre" id="barre" hidden><button id="btnVu">Tout marquer comme vu</button></div>
+
+<section class="feuille" id="feuille" aria-label="Réglages">
+  <header><h2>Réglages</h2><button class="icon-btn" id="btnFermer" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+  <div class="onglets"><button id="ongAff" class="on">Affichage</button><button id="ongNotif">Notifications</button></div>
+  <div id="panneau"></div>
+  <div class="section">
+    <h3>Synchronisation</h3>
+    <div class="aide">Pour que tes choix de <b>notifications</b> soient pris en compte par le programme du matin, colle ici ton jeton GitHub (voir le guide, étape 6). Il reste uniquement sur ce téléphone.</div>
+    <div style="padding:0 12px 10px">
+      <input class="champ" id="jeton" type="password" placeholder="github_pat_…" autocomplete="off">
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="btnJeton">Enregistrer</button><button class="btn sec" id="btnOubli">Effacer</button></div>
+    </div>
+    <div class="etat-sync" id="etatSync"></div>
+  </div>
+  <div class="section">
+    <h3>Recevoir les notifications</h3>
+    <div class="aide">Installe l'appli gratuite <b>ntfy</b> (Play Store), puis abonne-toi au sujet ci-dessous (bouton « + » dans ntfy). Toucher une notification ouvre cette appli.</div>
+    <div style="padding:0 12px 12px;display:flex;gap:8px;align-items:center">
+      <code id="sujet" style="flex:1;font-size:13px;background:var(--chip);padding:8px;border-radius:8px;overflow:auto"></code>
+      <button class="btn sec" id="btnCopier">Copier</button>
+    </div>
+  </div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const PREFS_DEFAUT = {notif_actives:true, notif_coloris:false, notif_exclus:[], affichage_coloris:true, affichage_exclus:[]};
+const SUJET_NTFY = "veille-cycle-uu2m2atfzj";
+
+let items = [], arbre = {}, statut = {};
+let prefs = Object.assign({}, PREFS_DEFAUT, store.get("prefs", {}));
+const visitePrecedente = store.get("derniereVisite", null);   // fixée pour toute la session
+let vue = visitePrecedente ? "nouv" : "tout";
+let filtreFamille = null, ongletReglages = "aff";
+const ouvertes = new Set();
+
+// ---- dépôt GitHub déduit de l'adresse (https://<compte>.github.io/<depot>/)
+const depot = (() => {
+  const compte = location.hostname.endsWith(".github.io") ? location.hostname.split(".")[0] : "";
+  const nom = location.pathname.split("/").filter(Boolean)[0] || "";
+  return compte && nom ? {compte, nom} : null;
+})();
+
+function toast(t){ const e=$("#toast"); e.textContent=t; e.classList.add("vis"); clearTimeout(toast.t); toast.t=setTimeout(()=>e.classList.remove("vis"),1800); }
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cle = (f, s) => s ? f + "|" + s : f;
+const estExclu = (it, liste) => liste.includes(it.famille) || liste.includes(cle(it.famille, it.sous_famille));
+const tVisite = visitePrecedente ? Date.parse(visitePrecedente) : 0;
+const estNouveau = it => !visitePrecedente || Date.parse(it.ts) > tVisite;
+
+async function charger(){
+  const t = Date.now();
+  try{
+    const [n, a, s] = await Promise.all(["nouveautes","arbre","statut"].map(f =>
+      fetch(`data/${f}.json?t=${t}`, {cache:"no-store"}).then(r => r.ok ? r.json() : null)));
+    items = n || []; arbre = a || {}; statut = s || {};
+    store.set("cache", {items, arbre, statut});
+  }catch(e){
+    const c = store.get("cache", null);
+    if (c){ ({items, arbre, statut} = c); toast("Hors ligne : dernières données affichées"); }
+  }
+  await chargerPrefsDistantes();
+  rendre();
+}
+
+function visibles(){
+  return items.filter(it => !estExclu(it, prefs.affichage_exclus) && (prefs.affichage_coloris || it.type === "produit"));
+}
+
+function rendre(){
+  const base = visibles();
+  const nouveaux = base.filter(estNouveau);
+  const source = vue === "nouv" ? nouveaux : base;
+  $("#vueNouv").textContent = `Depuis ma visite (${nouveaux.length})`;
+  $("#vueNouv").classList.toggle("on", vue === "nouv");
+  $("#vueTout").classList.toggle("on", vue === "tout");
+
+  const maj = statut.maj ? new Date(statut.maj) : null;
+  $("#sousTitre").textContent = maj
+    ? `MAJ ${maj.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})} à ${maj.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})} · decathlon.fr`
+    : "Pas encore de mise à jour";
+  $("#alerte").innerHTML = (statut.ok === false || statut.message)
+    ? `<div class="alerte">${esc(statut.message || "Problème lors de la dernière mise à jour.")}</div>` : "";
+
+  // pastilles familles
+  const compte = {};
+  source.forEach(it => compte[it.famille] = (compte[it.famille] || 0) + 1);
+  if (filtreFamille && !compte[filtreFamille]) filtreFamille = null;
+  $("#chips").innerHTML = Object.keys(compte).length > 1
+    ? `<button class="chip ${!filtreFamille?"on":""}" data-f="">Tout<b>${source.length}</b></button>` +
+      Object.entries(compte).sort((a,b)=>b[1]-a[1]).map(([f,n]) =>
+        `<button class="chip ${filtreFamille===f?"on":""}" data-f="${esc(f)}">${esc(f)}<b>${n}</b></button>`).join("")
+    : "";
+
+  const liste = filtreFamille ? source.filter(it => it.famille === filtreFamille) : source;
+  $("#barre").hidden = !(vue === "nouv" && nouveaux.length);
+
+  if (!liste.length){
+    $("#liste").innerHTML = vue === "nouv"
+      ? `<div class="vide"><b>Rien de nouveau depuis ta dernière visite</b>Les nouveautés sont relevées chaque matin vers 6 h 35.<br><br><button class="btn sec" onclick="changerVue('tout')">Voir les 90 derniers jours</button></div>`
+      : `<div class="vide"><b>Aucune nouveauté pour l'instant</b>${items.length ? "Vérifie tes filtres dans les réglages." : "Le premier relevé sert de base : les nouveautés apparaîtront dès le passage suivant."}</div>`;
+    return;
+  }
+  const parJour = {};
+  liste.forEach(it => (parJour[it.date] ||= []).push(it));
+  const auj = new Date().toISOString().slice(0,10);
+  const hier = new Date(Date.now()-864e5).toISOString().slice(0,10);
+  $("#liste").innerHTML = Object.entries(parJour).map(([d, arr]) => {
+    const lib = d === auj ? "Aujourd'hui" : d === hier ? "Hier" :
+      new Date(d+"T12:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+    return `<div class="jour">${lib} · ${arr.length}</div>` + arr.map(carte).join("");
+  }).join("");
+}
+
+function carte(it){
+  const rayon = [it.famille, it.sous_famille].filter(Boolean).join(" › ");
+  return `<a class="carte" href="${esc(it.url)}" target="_blank" rel="noopener">
+    ${it.image ? `<img src="${esc(it.image)}" alt="" loading="lazy">` : `<div class="ph"></div>`}
+    <div class="txt">
+      <div class="nom">${esc(it.nom || "Produit sans nom")}</div>
+      <div class="meta">${esc(it.marque ? it.marque + " · " : "")}${esc(rayon)}</div>
+      <div class="bas">
+        ${it.prix ? `<span class="prix">${esc(it.prix)}</span>` : ""}
+        ${it.type === "coloris" ? `<span class="tag">Nouveau coloris</span>` : ""}
+        ${estNouveau(it) && visitePrecedente ? `<span class="tag new">NEW</span>` : ""}
+      </div>
+    </div></a>`;
+}
+
+function changerVue(v){ vue = v; filtreFamille = null; rendre(); window.scrollTo(0,0); }
+
+// ---- réglages : arbre familles / sous-familles
+function rendreReglages(){
+  const notif = ongletReglages === "notif";
+  const champ = notif ? "notif_exclus" : "affichage_exclus";
+  const excl = prefs[champ];
+  const compteFam = {};
+  items.forEach(it => { compteFam[it.famille] = (compteFam[it.famille]||0)+1; const k=cle(it.famille,it.sous_famille); compteFam[k]=(compteFam[k]||0)+1; });
+
+  let h = `<div class="section"><h3>${notif ? "Notification du matin" : "Ce que j'affiche"}</h3>`;
+  if (notif){
+    h += ligneSw("maitre", "Recevoir une notification chaque matin", "Seulement s'il y a des nouveautés dans les familles cochées", prefs.notif_actives);
+    h += ligneSw("coloris", "Inclure les nouveaux coloris", "Un produit existant qui sort dans une nouvelle couleur", prefs.notif_coloris);
+  } else {
+    h += ligneSw("coloris", "Afficher les nouveaux coloris", "Un produit existant qui sort dans une nouvelle couleur", prefs.affichage_coloris);
+  }
+  h += `</div><div class="section" ${notif && !prefs.notif_actives ? 'style="opacity:.45;pointer-events:none"' : ""}><h3>Familles du rayon cycle</h3>`;
+  for (const [fam, sous] of Object.entries(arbre)){
+    const famOff = excl.includes(fam);
+    const sousOff = sous.filter(s => excl.includes(cle(fam,s))).length;
+    const indet = !famOff && sousOff > 0 && sousOff < sous.length;
+    const on = !famOff && sousOff < sous.length;
+    const ouv = ouvertes.has(fam);
+    h += `<div class="ligne">
+      ${sous.length ? `<button class="fleche ${ouv?"ouv":""}" data-ouvrir="${esc(fam)}" aria-label="Sous-familles">▶</button>` : `<span style="width:22px"></span>`}
+      <div class="lib">${esc(fam)}<small>${sous.length} sous-famille${sous.length>1?"s":""}${compteFam[fam] ? " · " + compteFam[fam] + " nouveauté" + (compteFam[fam]>1?"s":"") : ""}</small></div>
+      <input type="checkbox" class="sw" data-fam="${esc(fam)}" ${on?"checked":""} ${indet?'data-indet="1"':""}></div>`;
+    if (ouv) for (const s of sous){
+      const sOn = !famOff && !excl.includes(cle(fam,s));
+      const n = compteFam[cle(fam,s)];
+      h += `<div class="ligne sous"><div class="lib">${esc(s)}${n?`<small>${n} nouveauté${n>1?"s":""}</small>`:""}</div>
+        <input type="checkbox" class="sw" data-fam="${esc(fam)}" data-sous="${esc(s)}" ${sOn?"checked":""}></div>`;
+    }
+  }
+  h += `</div>`;
+  $("#panneau").innerHTML = h;
+  $("#panneau").querySelectorAll("[data-indet]").forEach(e => e.indeterminate = true);
+}
+function ligneSw(id, titre, sous, on){
+  return `<div class="ligne"><div class="lib">${titre}<small>${sous}</small></div><input type="checkbox" class="sw" data-opt="${id}" ${on?"checked":""}></div>`;
+}
+
+$("#panneau").addEventListener("click", e => {
+  const f = e.target.closest("[data-ouvrir]");
+  if (f){ const k=f.dataset.ouvrir; ouvertes.has(k)?ouvertes.delete(k):ouvertes.add(k); rendreReglages(); }
+});
+$("#panneau").addEventListener("change", e => {
+  const c = e.target; const notif = ongletReglages === "notif";
+  const champ = notif ? "notif_exclus" : "affichage_exclus";
+  let excl = prefs[champ].slice();
+  if (c.dataset.opt === "maitre") prefs.notif_actives = c.checked;
+  else if (c.dataset.opt === "coloris") prefs[notif ? "notif_coloris" : "affichage_coloris"] = c.checked;
+  else if (c.dataset.sous !== undefined){
+    const fam = c.dataset.fam, k = cle(fam, c.dataset.sous);
+    if (excl.includes(fam)){  // famille entièrement coupée : on la rouvre sauf les autres sous-familles
+      excl = excl.filter(x => x !== fam);
+      (arbre[fam]||[]).forEach(s => { if (s !== c.dataset.sous) excl.push(cle(fam,s)); });
+    }
+    excl = c.checked ? excl.filter(x => x !== k) : [...new Set([...excl, k])];
+  } else if (c.dataset.fam){
+    const fam = c.dataset.fam;
+    excl = excl.filter(x => x !== fam && !x.startsWith(fam + "|"));
+    if (!c.checked) excl.push(fam);
+  }
+  prefs[champ] = excl;
+  sauverPrefs(); rendreReglages(); rendre();
+});
+
+// ---- préférences : local + dépôt GitHub (pour les notifications)
+let minuteur = null;
+function sauverPrefs(){
+  store.set("prefs", prefs);
+  if (!store.get("jeton", "")) return;
+  clearTimeout(minuteur); minuteur = setTimeout(envoyerPrefs, 1200);
+}
+function api(chemin, opts={}){
+  return fetch(`https://api.github.com/repos/${depot.compte}/${depot.nom}/contents/${chemin}`, Object.assign({
+    headers: {"Authorization": "Bearer " + store.get("jeton",""), "Accept": "application/vnd.github+json"}
+  }, opts));
+}
+const enBase64 = s => btoa(unescape(encodeURIComponent(s)));
+const deBase64 = s => decodeURIComponent(escape(atob(s.replace(/\n/g,""))));
+let shaPrefs = null;
+async function chargerPrefsDistantes(){
+  if (!depot || !store.get("jeton","")) return majEtatSync();
+  try{
+    const r = await api("docs/data/preferences.json?t=" + Date.now());
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json(); shaPrefs = j.sha;
+    prefs = Object.assign({}, PREFS_DEFAUT, JSON.parse(deBase64(j.content)));
+    store.set("prefs", prefs);
+    majEtatSync("ok", "Synchronisé avec le programme du matin ✓");
+  }catch(e){ majEtatSync("err", "Synchronisation impossible (jeton invalide ou expiré ?)"); }
+}
+async function envoyerPrefs(){
+  if (!depot) return majEtatSync("err", "Ouvre l'appli depuis son adresse github.io pour synchroniser.");
+  try{
+    if (!shaPrefs){ const r = await api("docs/data/preferences.json"); if (r.ok) shaPrefs = (await r.json()).sha; }
+    const r = await api("docs/data/preferences.json", {method:"PUT", body: JSON.stringify({
+      message: "Préférences mises à jour depuis l'appli",
+      content: enBase64(JSON.stringify(prefs, null, 1) + "\n"), sha: shaPrefs || undefined })});
+    if (r.status === 409 || r.status === 422){ shaPrefs = null; return envoyerPrefs(); }
+    if (!r.ok) throw new Error(r.status);
+    shaPrefs = (await r.json()).content.sha;
+    majEtatSync("ok", "Préférences enregistrées pour le programme du matin ✓");
+  }catch(e){ majEtatSync("err", "Envoi impossible : vérifie ton jeton."); }
+}
+function majEtatSync(type, msg){
+  const e = $("#etatSync");
+  if (!type){ e.className = "etat-sync"; e.textContent = store.get("jeton","") ? "" : "Non synchronisé : les notifications utilisent les réglages par défaut (tout le rayon)."; return; }
+  e.className = "etat-sync " + type; e.textContent = msg;
+}
+
+// ---- événements
+$("#vueNouv").onclick = () => changerVue("nouv");
+$("#vueTout").onclick = () => changerVue("tout");
+$("#chips").onclick = e => { const c = e.target.closest(".chip"); if (!c) return; filtreFamille = c.dataset.f || null; rendre(); };
+$("#btnMaj").onclick = () => { charger(); toast("Actualisé"); };
+$("#btnVu").onclick = () => { store.set("derniereVisite", new Date().toISOString()); location.reload(); };
+$("#btnReglages").onclick = () => { rendreReglages(); $("#feuille").classList.add("ouverte"); };
+$("#btnFermer").onclick = () => $("#feuille").classList.remove("ouverte");
+$("#ongAff").onclick = () => { ongletReglages="aff"; $("#ongAff").classList.add("on"); $("#ongNotif").classList.remove("on"); rendreReglages(); };
+$("#ongNotif").onclick = () => { ongletReglages="notif"; $("#ongNotif").classList.add("on"); $("#ongAff").classList.remove("on"); rendreReglages(); };
+$("#btnJeton").onclick = async () => { store.set("jeton", $("#jeton").value.trim()); $("#jeton").value=""; await chargerPrefsDistantes(); rendreReglages(); rendre(); };
+$("#btnOubli").onclick = () => { store.set("jeton",""); majEtatSync(); toast("Jeton effacé"); };
+$("#sujet").textContent = SUJET_NTFY;
+$("#btnCopier").onclick = () => { navigator.clipboard?.writeText(SUJET_NTFY).then(()=>toast("Copié")); };
+
+// La visite est enregistrée quand on quitte l'appli : la prochaine ouverture
+// montrera ce qui est sorti depuis.
+let ouvertureMs = Date.now();
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden" && Date.now() - ouvertureMs > 3000)
+    store.set("derniereVisite", new Date().toISOString());
+  if (document.visibilityState === "hidden") ouvertureMs = Date.now();
+  else if (Date.now() - ouvertureMs > 10 * 60 * 1000) location.reload();
+});
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+charger();
+</script>
+</body>
+</html>
